@@ -34,6 +34,11 @@ class Product {
       print("The price cannot be negative");
     }
   }
-}
 
-class ProductManager {}
+  void display() {
+    print("Product: $_name");
+    print("Description: $_description");
+    print("Price: \$_$_price");
+    print("---------------");
+  }
+}
