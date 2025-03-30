@@ -1,10 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:product3/addPage.dart';
+import 'package:product3/models/product_repositry.dart';
 import 'package:product3/searchPage.dart';
+import 'models/product.dart';
 import 'supplemental/product_show.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late List<Product> products; // Make products mutable
+
+  @override
+  void initState() {
+    super.initState();
+    products = ProductRepository.loadProducts(); // Initialize products
+  }
+
+  void _handleDelete(Product product) {
+    setState(() => products.remove(product));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Product deleted successfully"),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,18 +45,15 @@ class HomePage extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  // Rectangle Placeholder
                   Container(
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Color(0xFFCCCCCC),
+                      color: const Color(0xFFCCCCCC),
                       borderRadius: BorderRadius.circular(11),
                     ),
                   ),
                   const SizedBox(width: 12),
-
-                  // Date and Greeting Text
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,8 +84,6 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Notification Button
                   Stack(
                     children: [
                       Container(
@@ -106,12 +127,7 @@ class HomePage extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProductSearchApp(),
-                      ),
-                    );
+                    context.push('/search');
                   },
                   child: Stack(
                     children: [
@@ -136,9 +152,19 @@ class HomePage extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 physics: const ClampingScrollPhysics(),
-                itemCount: 4, // Number of items
+                itemCount: products.length,
                 itemBuilder: (context, index) {
-                  return const CardsDisplay();
+                  final product = products[index];
+                  return CardsDisplay(
+                    product: product,
+                    onDeleteResult: (product, success) {
+                      if (success) {
+                        _handleDelete(product);
+                      } else {
+                        _handleDelete(product);
+                      }
+                    },
+                  );
                 },
               ),
             ),
@@ -146,18 +172,13 @@ class HomePage extends StatelessWidget {
         ),
       ),
       floatingActionButton: SizedBox(
-        width: 79, // Diameter (2 * 79 pixels)
+        width: 79,
         height: 79,
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddProductPage(),
-              ),
-            );
+            context.push('/add');
           },
-          backgroundColor: Color(0xFF3F51F3),
+          backgroundColor: const Color(0xFF3F51F3),
           shape: const CircleBorder(),
           child: const Icon(
             Icons.add,
