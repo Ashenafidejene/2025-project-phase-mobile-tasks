@@ -1,15 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:product3/models/product.dart';
 
 class DetailsPage extends StatefulWidget {
-  const DetailsPage({super.key});
+  final Product product;
+  final Function(bool) onDeleteResult;
+  const DetailsPage({
+    super.key,
+    required this.product,
+    required this.onDeleteResult,
+  });
 
   @override
-  State<DetailsPage> createState() => _DetailsPageState();
+  State<DetailsPage> createState() => _DetailsPageState(product: product);
 }
 
 class _DetailsPageState extends State<DetailsPage> {
-  int selectedSize = 38;
-  final List<int> sizes = [37, 38, 39, 40, 41, 42, 43, 44, 45];
+  final Product product;
+  _DetailsPageState({required this.product});
+  String selectedSize = ""; // Updated to String
+  late final List<String> sizes = product.sizes; // Use product's sizes
+
+  @override
+  void initState() {
+    super.initState();
+    if (sizes.isNotEmpty) {
+      selectedSize = sizes.first; // Default to the first size
+    }
+  }
+
+  void _handleDelete() async {
+    final shouldDelete = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Confirm Delete"),
+            content:
+                const Text("Are you sure you want to delete this product?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child:
+                    const Text("Delete", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (shouldDelete) {
+      widget.onDeleteResult(true); // Return true if deleted
+      Navigator.pop(context); // Close details page
+    } else {
+      widget.onDeleteResult(false); // Return false if cancelled
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +68,8 @@ class _DetailsPageState extends State<DetailsPage> {
           Stack(
             children: [
               Image.asset(
-                'images/image_2025-03-25_09-49-39.png',
+                'images/placeholder.png',
                 width: double.infinity,
-                height: 300, // Adjust the height as needed
                 fit: BoxFit.cover,
               ),
               Positioned(
@@ -48,23 +94,24 @@ class _DetailsPageState extends State<DetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Product Title & Rating
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Men’s Shoe",
-                        style: TextStyle(
+                        product.category.name,
+                        style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
                             fontWeight: FontWeight.w400),
                       ),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Color(0XFFFFD700), size: 18),
-                          SizedBox(width: 4),
+                          const Icon(Icons.star,
+                              color: Color(0XFFFFD700), size: 18),
+                          const SizedBox(width: 4),
                           Text(
-                            "(4.0)",
-                            style: TextStyle(
+                            "(${product.level})",
+                            style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0XFFAAAAAA),
                                 fontWeight: FontWeight.w400),
@@ -74,19 +121,19 @@ class _DetailsPageState extends State<DetailsPage> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Derby Leather Shoes",
-                        style: TextStyle(
+                        product.productName,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        "\$120",
-                        style: TextStyle(
+                        "\$${product.price.toStringAsFixed(2)}",
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -94,14 +141,6 @@ class _DetailsPageState extends State<DetailsPage> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Size:",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   // Scrollable Sizes
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -127,7 +166,7 @@ class _DetailsPageState extends State<DetailsPage> {
                                   Border.all(color: const Color(0XFF3F51F3)),
                             ),
                             child: Text(
-                              size.toString(),
+                              size,
                               style: TextStyle(
                                 fontSize: 20.0,
                                 color: selectedSize == size
@@ -143,10 +182,10 @@ class _DetailsPageState extends State<DetailsPage> {
                   ),
                   const SizedBox(height: 12),
                   // Product Description
-                  const Text(
-                    "A derby leather shoe is a classic and  eyelets are sewn on top of the vamp (the upper part of the shoe). This design feature provides a more relaxed and casual look compared to the closed lacing system of oxford shoes. Derby shoes are typically made of high-quality leather, known for its durability and elegance, making them suitable for both formal and casual occasions. With their timeless style and comfortable fit, derby leather shoes are a staple in any well-rounded wardrobe.",
-                    style:
-                        TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
+                  Text(
+                    product.description,
+                    style: const TextStyle(
+                        fontSize: 14.0, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 12),
                   // Action Buttons
@@ -155,7 +194,7 @@ class _DetailsPageState extends State<DetailsPage> {
                     children: [
                       // DELETE Button
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _handleDelete,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           side: const BorderSide(

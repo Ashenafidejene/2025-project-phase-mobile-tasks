@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:product3/models/product_repositry.dart';
 import 'package:product3/supplemental/product_show.dart';
+
+import 'models/product.dart';
 
 void main() => runApp(const ProductSearchApp());
 
@@ -25,41 +29,62 @@ class ProductSearchScreen extends StatefulWidget {
 
 class _ProductSearchScreenState extends State<ProductSearchScreen> {
   String searchQuery = '';
-  RangeValues priceRange = const RangeValues(20, 100); // Initial range values
+  RangeValues priceRange = const RangeValues(0, 150); // Initial range values
+  List<Product> filteredProducts =
+      ProductRepository.loadProducts(); // All products initially
+
+  void filterProducts() {
+    setState(() {
+      filteredProducts = ProductRepository.loadProducts().where((product) {
+        final matchesCategory = searchQuery.isEmpty ||
+            product.category.name
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase());
+        final matchesPrice = product.price >= priceRange.start &&
+            product.price <= priceRange.end;
+        return matchesCategory && matchesPrice;
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Search Product'),
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.keyboard_arrow_left_outlined,
-                color: Color(0XFF3F51F3)),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            iconSize: 30,
-            color: Colors.white,
-          )),
+        title: const Text('Search Product'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.keyboard_arrow_left_outlined,
+              color: Color(0XFF3F51F3)),
+          onPressed: () {
+            context.pop();
+          },
+          iconSize: 30,
+          color: Colors.white,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Search Bar and Filter Button
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     decoration: const InputDecoration(
-                      hintText: 'Leather',
+                      hintText: 'Enter category',
                       suffixIcon: Icon(
-                        Icons.arrow_forward,
+                        Icons.search,
                         color: Color(0XFF3F51F3),
                       ),
                       border: OutlineInputBorder(),
                     ),
-                    onChanged: (value) => setState(() => searchQuery = value),
+                    onChanged: (value) {
+                      searchQuery = value;
+                      filterProducts(); // Filter products on category input
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -85,25 +110,10 @@ class _ProductSearchScreenState extends State<ProductSearchScreen> {
                 ),
               ],
             ),
-            Expanded(
-              child: ListView.builder(
-                physics: const ClampingScrollPhysics(),
-                itemCount: 4,
-                itemBuilder: (context, index) {
-                  return const CardsDisplay();
-                },
-              ),
-            ),
-            const Text("Category",
-                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w400)),
-            TextField(
-                decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            )),
+            const SizedBox(height: 16),
+            // Price Range Slider
             const Text(
-              'Price',
+              'Price Range',
               style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w400),
             ),
             RangeSlider(
@@ -116,25 +126,30 @@ class _ProductSearchScreenState extends State<ProductSearchScreen> {
                 '\$${priceRange.end.round()}',
               ),
               onChanged: (RangeValues values) {
-                setState(() {
-                  priceRange = values;
-                });
+                priceRange = values;
+                filterProducts(); // Filter products on price range change
               },
               activeColor: const Color(0XFF3F51F3), // Selected range color
               inactiveColor: Colors.grey.shade300, // Unselected range color
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Apply filter action
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0XFF3F51F3),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            const SizedBox(height: 16),
+            // Product List
+            Expanded(
+              child: ListView.builder(
+                physics: const ClampingScrollPhysics(),
+                itemCount: filteredProducts.length,
+                itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
+                  return CardsDisplay(
+                    product: product,
+                    onDeleteResult: (product, isDeleted) {
+                      if (isDeleted) {
+                        filterProducts();
+                      }
+                    },
+                  );
+                },
               ),
-              child: const Text('Apply', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
