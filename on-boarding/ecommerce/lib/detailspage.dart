@@ -52,9 +52,10 @@ class _DetailsPageState extends State<DetailsPage> {
 
     if (shouldDelete) {
       widget.onDeleteResult(true); // Return true if deleted
-      Navigator.pop(context); // Close details page
+      Navigator.pop(context, true); // Close details page
     } else {
-      widget.onDeleteResult(false); // Return false if cancelled
+      widget.onDeleteResult(false);
+      Navigator.pop(context, false); // Return false if cancelled
     }
   }
 
