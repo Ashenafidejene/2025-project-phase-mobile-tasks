@@ -39,13 +39,13 @@ final router = GoRouter(
           ),
         ),
         GoRoute(
-          path: 'details',
+          path: '/details',
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: DetailsPage(
               product: state.extra as Product,
               onDeleteResult: (success) {
-                // Handle deletion if needed
+                Navigator.pop(context, success); // Handle deletion if needed
               },
             ),
             transitionsBuilder:

@@ -1,0 +1,7 @@
+{
+    "id": "1",
+    "name": "Test Product",
+    "description": "Test Description",
+    "imageUrl": "test_url",
+    "price": 9.99
+}
