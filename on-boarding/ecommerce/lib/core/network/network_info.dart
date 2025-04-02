@@ -11,7 +11,11 @@ class NetworkInfoImpl implements NetworkInfo {
 
   @override
   Future<bool> get isConnected async {
-    final connectivityResult = await connectivity.checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
+    try {
+      final connectivityResult = await connectivity.checkConnectivity();
+      return connectivityResult != ConnectivityResult.none;
+    } catch (_) {
+      return false;
+    }
   }
 }

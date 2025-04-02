@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:product3/core/error/failures.dart';
 import 'package:product3/features/ecommerce/data/models/product_model.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/error/exceptions.dart';
 
 abstract class ProductLocalDataSource {
@@ -10,6 +10,8 @@ abstract class ProductLocalDataSource {
 }
 
 class ProductLocalDataSourceImpl implements ProductLocalDataSource {
+  final SharedPreferences sharedPreferences;
+  ProductLocalDataSourceImpl({required this.sharedPreferences});
   final List<ProductModel> _cachedProducts = [];
 
   @override
