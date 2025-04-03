@@ -57,17 +57,6 @@
 
 ---
 
-## **⚙️ Technical Implementation**  
-
-### **📂 Folder Structure**  
-```
-lib/
-├── models/           # Data models
-├── pages/            # Screen implementations
-├── widgets/          # Reusable components
-├── app_router.dart   # Routing configuration
-└── main.dart         # App entry point
-```
 
 ### **📦 Dependencies**  
 - `go_router`: For navigation  
